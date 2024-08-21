@@ -7,3 +7,4 @@
 /ConsoleVideoExtractFaces/LibVideoExtractFaces/obj
 /ConsoleVideoExtractFaces/ConsoleVideoExtractFaces/Videos/*.mp4
 /ConsoleVideoExtractFaces/ConsoleVideoExtractFaces/models/yolov3/yolov3.weights
+/.vs

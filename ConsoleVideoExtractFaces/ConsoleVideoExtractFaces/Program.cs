@@ -10,7 +10,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        string videoDirectory = "path/to/video/folder";
+        string videoDirectory = "./video";
 
         // Obter todos os arquivos de vídeo na pasta especificada
         var videoFiles = Directory.GetFiles(videoDirectory, "*.*")
