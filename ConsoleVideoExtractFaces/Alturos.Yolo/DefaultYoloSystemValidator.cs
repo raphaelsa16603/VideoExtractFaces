@@ -14,20 +14,18 @@ namespace Alturos.Yolo
             var report = new SystemValidationReport();
 
 #if NETSTANDARD
-
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                report.MicrosoftVisualCPlusPlusRedistributableExists = this.IsMicrosoftVisualCPlusPlus2017Available();
+                report.MicrosoftVisualCPlusPlusRedistributableExists = this.IsMicrosoftVisualCPlusPlusAvailable();
             }
             else
             {
                 report.MicrosoftVisualCPlusPlusRedistributableExists = true;
             }
-
 #endif
 
 #if NET461
-            report.MicrosoftVisualCPlusPlusRedistributableExists = this.IsMicrosoftVisualCPlusPlus2017Available();
+            report.MicrosoftVisualCPlusPlusRedistributableExists = this.IsMicrosoftVisualCPlusPlusAvailable();
 #endif
 
             if (File.Exists("cudnn64_7.dll"))
@@ -35,12 +33,12 @@ namespace Alturos.Yolo
                 report.CudnnExists = true;
             }
 
-            var envirormentVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
-            if (envirormentVariables.Contains("CUDA_PATH"))
+            var environmentVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Machine);
+            if (environmentVariables.Contains("CUDA_PATH"))
             {
                 report.CudaExists = true;
             }
-            if (envirormentVariables.Contains("CUDA_PATH_V10_2"))
+            if (environmentVariables.Contains("CUDA_PATH_V10_2"))
             {
                 report.CudaExists = true;
             }
@@ -48,26 +46,30 @@ namespace Alturos.Yolo
             return report;
         }
 
-        private bool IsMicrosoftVisualCPlusPlus2017Available()
+        private bool IsMicrosoftVisualCPlusPlusAvailable()
         {
-            //Detect if Visual C++ Redistributable for Visual Studio is installed
-            //https://stackoverflow.com/questions/12206314/detect-if-visual-c-redistributable-for-visual-studio-2012-is-installed/
-            var checkKeys = new Dictionary<string, string>
+            // Dicionário com as versões relevantes do Visual C++ Redistributable (x64)
+            var checkKeys = new Dictionary<string, List<string>>
             {
-                { @"Installer\Dependencies\,,amd64,14.0,bundle", "Microsoft Visual C++ 2017 Redistributable (x64)" },
-                { @"Installer\Dependencies\VC,redist.x64,amd64,14.16,bundle", "Microsoft Visual C++ 2017 Redistributable (x64)" },
-                { @"Installer\Dependencies\VC,redist.x64,amd64,14.20,bundle", "Microsoft Visual C++ 2015-2019 Redistributable (x64)" },
-                { @"Installer\Dependencies\VC,redist.x64,amd64,14.21,bundle", "Microsoft Visual C++ 2015-2019 Redistributable (x64)" },
-                { @"Installer\Dependencies\VC,redist.x64,amd64,14.22,bundle", "Microsoft Visual C++ 2015-2019 Redistributable (x64)" },
-                { @"Installer\Dependencies\VC,redist.x64,amd64,14.23,bundle", "Microsoft Visual C++ 2015-2019 Redistributable (x64)" },
-                { @"Installer\Dependencies\VC,redist.x64,amd64,14.24,bundle", "Microsoft Visual C++ 2015-2019 Redistributable (x64)" },
-                { @"Installer\Dependencies\VC,redist.x64,amd64,14.25,bundle", "Microsoft Visual C++ 2015-2019 Redistributable (x64)" },
-                { @"Installer\Dependencies\VC,redist.x64,amd64,14.26,bundle", "Microsoft Visual C++ 2015-2019 Redistributable (x64)" }
+                { @"Installer\Dependencies\,,amd64,14.0,bundle", new List<string> { "Microsoft Visual C++ 2017 Redistributable (x64)" } },
+                { @"Installer\Dependencies\VC,redist.x64,amd64,14.16,bundle", new List<string> { "Microsoft Visual C++ 2017 Redistributable (x64)" } },
+                { @"Installer\Dependencies\VC,redist.x64,amd64,14.20,bundle", new List<string>
+                    {
+                        "Microsoft Visual C++ 2015-2019 Redistributable (x64)",
+                        "Microsoft Visual C++ 2017 Redistributable (x64)"
+                    }
+                },
+                { @"Installer\Dependencies\VC,redist.x64,amd64,14.21,bundle", new List<string> { "Microsoft Visual C++ 2015-2019 Redistributable (x64)" } },
+                { @"Installer\Dependencies\VC,redist.x64,amd64,14.22,bundle", new List<string> { "Microsoft Visual C++ 2015-2019 Redistributable (x64)" } },
+                { @"Installer\Dependencies\VC,redist.x64,amd64,14.23,bundle", new List<string> { "Microsoft Visual C++ 2015-2019 Redistributable (x64)" } },
+                { @"Installer\Dependencies\VC,redist.x64,amd64,14.24,bundle", new List<string> { "Microsoft Visual C++ 2015-2019 Redistributable (x64)" } },
+                { @"Installer\Dependencies\VC,redist.x64,amd64,14.25,bundle", new List<string> { "Microsoft Visual C++ 2015-2019 Redistributable (x64)" } },
+                { @"Installer\Dependencies\VC,redist.x64,amd64,14.26,bundle", new List<string> { "Microsoft Visual C++ 2015-2019 Redistributable (x64)" } }
             };
 
             foreach (var checkKey in checkKeys)
             {
-                using (var registryKey = Registry.ClassesRoot.OpenSubKey(checkKey.Key, false))
+                using (var registryKey = Registry.LocalMachine.OpenSubKey($@"SOFTWARE\Classes\{checkKey.Key}", false))
                 {
                     if (registryKey == null)
                     {
@@ -80,9 +82,12 @@ namespace Alturos.Yolo
                         continue;
                     }
 
-                    if (displayName.StartsWith(checkKey.Value, StringComparison.OrdinalIgnoreCase))
+                    foreach (var version in checkKey.Value)
                     {
-                        return true;
+                        if (displayName.StartsWith(version, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
                     }
                 }
             }

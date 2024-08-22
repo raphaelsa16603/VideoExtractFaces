@@ -29,7 +29,7 @@ namespace LibVideoExtractFaces.Image
         {
             _frameQualityFilter = frameQualityFilter;
 
-            var dirConfig = "./models/yolov3";
+            /*var dirConfig = "./models/yolov3";
 
             if(!Directory.Exists(dirConfig))
             {
@@ -45,7 +45,7 @@ namespace LibVideoExtractFaces.Image
             string namesFile = "path/to/coco.names";
 
             // Inicializando YoloWrapper com os arquivos de configuração
-            _yoloWrapper = new YoloWrapper(configFile, weightsFile, namesFile);
+            _yoloWrapper = new YoloWrapper(configFile, weightsFile, namesFile);*/
         }
 
         public IEnumerable<LibVideoExtractFaces.Model.Image> ExtractFaces(IEnumerable<Frame> frames)
@@ -68,7 +68,7 @@ namespace LibVideoExtractFaces.Image
 
         public IEnumerable<LibVideoExtractFaces.Model.Image> ExtractFullBodies(IEnumerable<Frame> frames)
         {
-            foreach (var frame in frames)
+            /*foreach (var frame in frames)
             {
                 if (_frameQualityFilter.IsFrameQualityGood(frame))
                 {
@@ -81,7 +81,9 @@ namespace LibVideoExtractFaces.Image
                         }
                     }
                 }
-            }
+            }*/
+
+            return new List<LibVideoExtractFaces.Model.Image>();
         }
 
         private IEnumerable<byte[]> DetectFaces(OpenCvSharp.Mat mat)
