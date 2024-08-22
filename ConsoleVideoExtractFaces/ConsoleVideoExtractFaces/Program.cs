@@ -31,7 +31,7 @@ class Program
 
             // Salvar ou processar as imagens extraídas
             SaveImages(faces, "faces", Path.GetFileNameWithoutExtension(videoFile));
-            SaveImages(fullBodies, "bodies", Path.GetFileNameWithoutExtension(videoFile));
+            //SaveImages(fullBodies, "bodies", Path.GetFileNameWithoutExtension(videoFile));
         }
     }
 

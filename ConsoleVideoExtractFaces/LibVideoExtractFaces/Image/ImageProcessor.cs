@@ -102,10 +102,14 @@ namespace LibVideoExtractFaces.Image
                     foreach (var face in faces)
                     {
                         var rect = new OpenCvSharp.Rect(face.Left, face.Top, (int)face.Width, (int)face.Height);
-                        using (var faceMat = new OpenCvSharp.Mat(mat, rect))
+                        if (rect.X >= 0 && rect.Y >= 0 && rect.X + rect.Width <= mat.Cols && rect.Y + rect.Height <= mat.Rows)
                         {
-                            facesList.Add(faceMat.ToBytes(".jpg"));
+                            using (var faceMat = new OpenCvSharp.Mat(mat, rect))
+                            {
+                                facesList.Add(faceMat.ToBytes(".jpg"));
+                            }
                         }
+
                     }
                 }
             }
