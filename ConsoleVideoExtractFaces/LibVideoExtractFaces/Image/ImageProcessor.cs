@@ -52,9 +52,9 @@ namespace LibVideoExtractFaces.Image
             _yoloWrapper = new YoloWrapper(configFile, weightsFile, namesFile);*/
         }
 
-        public IEnumerable<LibVideoExtractFaces.Model.Image> ExtractFaces(IEnumerable<Frame> frames)
+        public IEnumerable<LibVideoExtractFaces.Model.Image> ExtractFaces(IEnumerable<Frame> frames, int quantidade = 8)
         {
-            ExtrairFramesPricipais(frames);
+            ExtrairFramesPricipais(frames, quantidade);
 
             foreach (var frame in frames)
             {
@@ -72,10 +72,10 @@ namespace LibVideoExtractFaces.Image
             }
         }
 
-        private void ExtrairFramesPricipais(IEnumerable<Frame> frames)
+        private void ExtrairFramesPricipais(IEnumerable<Frame> frames, int quantidade = 8)
         {
             // Dividir a quantidade de frames em 8 partes
-            int numParts = 8;
+            int numParts = quantidade;
             int framesPerPart = frames.Count() / numParts;
 
             var lista = new List<LibVideoExtractFaces.Model.Image>();

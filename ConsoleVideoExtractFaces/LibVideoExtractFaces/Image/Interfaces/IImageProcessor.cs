@@ -9,7 +9,7 @@ namespace LibVideoExtractFaces.Image.Interfaces
 {
     public interface IImageProcessor
     {
-        IEnumerable<LibVideoExtractFaces.Model.Image> ExtractFaces(IEnumerable<Frame> frames);
+        IEnumerable<LibVideoExtractFaces.Model.Image> ExtractFaces(IEnumerable<Frame> frames, int quantidade = 8);
         IEnumerable<LibVideoExtractFaces.Model.Image> ExtractFullBodies(IEnumerable<Frame> frames);
     }
 
