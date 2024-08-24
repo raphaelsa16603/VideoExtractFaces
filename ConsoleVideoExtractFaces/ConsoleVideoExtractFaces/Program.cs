@@ -18,13 +18,15 @@ class Program
                                     // Adicione outras extensões de vídeo se necessário
 
         var videoReader = VideoProcessingFactory.CreateVideoReader();
-        var imageProcessor = VideoProcessingFactory.CreateImageProcessor();
+        
 
         foreach (var videoFile in videoFiles)
         {
             Console.WriteLine($"Processando vídeo: {Path.GetFileName(videoFile)}");
 
             var frames = videoReader.ReadFrames(videoFile);
+
+            var imageProcessor = VideoProcessingFactory.CreateImageProcessor(Path.GetFileNameWithoutExtension(videoFile));
 
             var faces = imageProcessor.ExtractFaces(frames);
             var fullBodies = imageProcessor.ExtractFullBodies(frames);

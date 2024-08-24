@@ -15,6 +15,7 @@ using Alturos.Yolo;
 using Alturos.Yolo.Model;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
 
 namespace LibVideoExtractFaces.Image
 {
@@ -25,9 +26,12 @@ namespace LibVideoExtractFaces.Image
         private readonly IFrameQualityFilter _frameQualityFilter;
         private readonly YoloWrapper _yoloWrapper;
 
-        public ImageProcessor(IFrameQualityFilter frameQualityFilter)
+        private string _videoName;
+
+        public ImageProcessor(IFrameQualityFilter frameQualityFilter, string videoName = "Geral")
         {
             _frameQualityFilter = frameQualityFilter;
+            _videoName = videoName;
 
             /*var dirConfig = "./models/yolov3";
 
@@ -50,6 +54,8 @@ namespace LibVideoExtractFaces.Image
 
         public IEnumerable<LibVideoExtractFaces.Model.Image> ExtractFaces(IEnumerable<Frame> frames)
         {
+            ExtrairFramesPricipais(frames);
+
             foreach (var frame in frames)
             {
                 if (_frameQualityFilter.IsFrameQualityGood(frame))
@@ -63,6 +69,41 @@ namespace LibVideoExtractFaces.Image
                         }
                     }
                 }
+            }
+        }
+
+        private void ExtrairFramesPricipais(IEnumerable<Frame> frames)
+        {
+            // Dividir a quantidade de frames em 8 partes
+            int numParts = 8;
+            int framesPerPart = frames.Count() / numParts;
+
+            var lista = new List<LibVideoExtractFaces.Model.Image>();
+
+            for (int i = 0; i < numParts; i++)
+            {
+                // Obter a parte atual de frames
+                var currentFrames = frames.Skip(i * framesPerPart).Take(framesPerPart);
+                var iFrame = currentFrames.FirstOrDefault();
+                var imagem = OpenCvSharp.Mat.FromImageData(iFrame.ImageData);
+                var imagemBytes = new LibVideoExtractFaces.Model.Image(imagem.ToBytes(".jpg"), $"Frame_{i}_");
+                
+                lista.Add(imagemBytes);
+
+            }
+
+            // Obter a data e hora atual
+            var now = DateTime.Now;
+            var folderName = now.ToString("yyyy_MM_dd_HH");
+
+            // Salvar as imagens dos frames na pasta frames na subpasta ano_mes_dia_hora
+            if (_videoName != null)
+            {
+                SaveImages(lista, folderName, _videoName.Trim());
+            }
+            else
+            {
+                SaveImages(lista, folderName, "Geral");
             }
         }
 
@@ -135,6 +176,25 @@ namespace LibVideoExtractFaces.Image
             }
 
             return bodiesList;
+        }
+
+        private static void SaveImages(IEnumerable<LibVideoExtractFaces.Model.Image> images, string directory, string videoName)
+        {
+            string outputDirectory = Path.Combine("output", directory, videoName);
+
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            int imageIndex = 1;
+
+            foreach (var image in images)
+            {
+                string filePath = Path.Combine(outputDirectory, $"image_{imageIndex}.jpg");
+                File.WriteAllBytes(filePath, image.Data);
+                imageIndex++;
+            }
         }
     }
 
