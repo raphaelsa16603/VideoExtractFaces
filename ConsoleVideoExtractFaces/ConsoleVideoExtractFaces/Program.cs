@@ -29,11 +29,21 @@ class Program
             var imageProcessor = VideoProcessingFactory.CreateImageProcessor(Path.GetFileNameWithoutExtension(videoFile));
 
             var faces = imageProcessor.ExtractFaces(frames, 48);
-            var fullBodies = imageProcessor.ExtractFullBodies(frames);
+            //var fullBodies = imageProcessor.ExtractFullBodies(frames);
 
             // Salvar ou processar as imagens extraídas
             SaveImages(faces, "faces", Path.GetFileNameWithoutExtension(videoFile));
             //SaveImages(fullBodies, "bodies", Path.GetFileNameWithoutExtension(videoFile));
+
+            /// Processamento extra
+
+            var imageProcessorEx = VideoProcessingFactory.CreateImageProcessorExtra(Path.GetFileNameWithoutExtension(videoFile));
+
+            var facesEx = imageProcessor.ExtractFaces(frames, 48);
+
+            // Salvar ou processar as imagens extraídas
+            SaveImages(facesEx, "facesEx", Path.GetFileNameWithoutExtension(videoFile));
+
         }
     }
 
