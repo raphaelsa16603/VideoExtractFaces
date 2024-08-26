@@ -21,5 +21,10 @@ namespace LibVideoExtractFaces
         {
             return new ImageProcessor(new FrameQualityFilter(), videoName);
         }
+
+        public static IImageProcessor CreateImageProcessorExtra(string videoName = "Geral")
+        {
+            return new ImageProcessorExtra(new FrameQualityFilter(), videoName);
+        }
     }
 }
