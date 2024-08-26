@@ -79,23 +79,42 @@ namespace LibVideoExtractFaces.Image
                                 yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
                             }*/
 
-                            faces = DetectFaces(mat, "./models/haarcascade_frontalface_alt.xml");
+
+                            // Modelo não deteca rosto também com baixa qualidade. Pegou só linhas no chão.
+                            /*faces = DetectFaces(mat, "./models/haarcascade_frontalface_alt.xml");
+                            foreach (var face in faces)
+                            {
+                                yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
+                            }*/
+
+
+                            // Modelo não deteca corpo inteiro com baixa qualidade. Pegou nada
+                            /*faces = DetectFaces(mat, "./models/haarcascade_fullbody.xml");
+                            foreach (var face in faces)
+                            {
+                                yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
+                            }*/
+
+                            // Detecta parte superior do rosto com baixa qualidade. Para um modelo de rosto de perfil.
+                            /*faces = DetectFaces(mat, "./models/haarcascade_profileface.xml");
+                            foreach (var face in faces)
+                            {
+                                yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
+                            }*/
+                            // Aplicando rotação da imagem para pegar a face.
+                            faces = DetectFacesWithRotations(mat, "./models/haarcascade_profileface.xml");
                             foreach (var face in faces)
                             {
                                 yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
                             }
 
-                            faces = DetectFaces(mat, "./models/haarcascade_fullbody.xml");
+                            // haarcascade_frontalface_default_cuda.xml
+                            // Não funcionou bem
+                            /*faces = DetectFaces(mat, "./models/haarcascade_frontalface_default_cuda.xml");
                             foreach (var face in faces)
                             {
                                 yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
-                            }
-
-                            faces = DetectFaces(mat, "./models/haarcascade_profileface.xml");
-                            foreach (var face in faces)
-                            {
-                                yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
-                            }
+                            }*/
                         }
                     }
                 }
@@ -217,6 +236,68 @@ namespace LibVideoExtractFaces.Image
 
             return facesList;
         }
+
+
+        private IEnumerable<byte[]> DetectFacesWithRotations(OpenCvSharp.Mat mat, string fileXml = "./models/haarcascade_frontalface_default.xml")
+        {
+            var facesList = new List<byte[]>();
+
+            // Carregar o classificador pré-treinado do OpenCV para detecção de faces
+            var faceCascade = new OpenCvSharp.CascadeClassifier(fileXml);
+
+            // Tentar detectar faces em diferentes rotações
+            for (int angle = 0; angle < 360; angle += 90)
+            {
+                using (var rotatedMat = RotateImage(mat, angle))
+                {
+                    // Converter a imagem para escala de cinza
+                    using (var grayMat = new OpenCvSharp.Mat())
+                    {
+                        Cv2.CvtColor(rotatedMat, grayMat, OpenCvSharp.ColorConversionCodes.BGR2GRAY);
+
+                        // Detectar faces na imagem rotacionada
+                        var faces = faceCascade.DetectMultiScale(grayMat, 1.1, 3, HaarDetectionTypes.ScaleImage, new OpenCvSharp.Size(30, 30));
+
+                        foreach (var face in faces)
+                        {
+                            var rect = new OpenCvSharp.Rect(face.X, face.Y, face.Width, face.Height);
+
+                            if (rect.X >= 0 && rect.Y >= 0 && rect.X + rect.Width <= rotatedMat.Cols && rect.Y + rect.Height <= rotatedMat.Rows)
+                            {
+                                // Rotacionar a face de volta à posição original
+                                using (var faceMat = new OpenCvSharp.Mat(rotatedMat, rect))
+                                {
+                                    if (angle != 0)
+                                    {
+                                        using (var correctedFaceMat = RotateImage(faceMat, 360 - angle))
+                                        {
+                                            facesList.Add(correctedFaceMat.ToBytes(".jpg"));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        facesList.Add(faceMat.ToBytes(".jpg"));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return facesList;
+        }
+
+        private OpenCvSharp.Mat RotateImage(OpenCvSharp.Mat mat, double angle)
+        {
+            var center = new OpenCvSharp.Point2f(mat.Width / 2, mat.Height / 2);
+            var rotationMatrix = Cv2.GetRotationMatrix2D(center, angle, 1.0);
+            var rotatedMat = new OpenCvSharp.Mat();
+            Cv2.WarpAffine(mat, rotatedMat, rotationMatrix, new OpenCvSharp.Size(mat.Width, mat.Height));
+            return rotatedMat;
+        }
+
+
 
         private IEnumerable<byte[]> DetectFullBodies(OpenCvSharp.Mat mat)
         {
