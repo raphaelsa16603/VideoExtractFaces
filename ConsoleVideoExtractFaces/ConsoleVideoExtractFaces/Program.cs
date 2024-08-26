@@ -28,7 +28,7 @@ class Program
 
             var imageProcessor = VideoProcessingFactory.CreateImageProcessor(Path.GetFileNameWithoutExtension(videoFile));
 
-            var faces = imageProcessor.ExtractFaces(frames, 35);
+            var faces = imageProcessor.ExtractFaces(frames, 48);
             var fullBodies = imageProcessor.ExtractFullBodies(frames);
 
             // Salvar ou processar as imagens extraídas

@@ -63,9 +63,20 @@ namespace LibVideoExtractFaces.Image
                     using (var mat = OpenCvSharp.Mat.FromImageData(frame.ImageData))
                     {
                         var faces = DetectFaces(mat);
-                        foreach (var face in faces)
+                        if(faces != null && faces.Count() > 0)
                         {
-                            yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
+                            foreach (var face in faces)
+                            {
+                                yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
+                            }
+                        }
+                        else
+                        {
+                            faces = DetectFaces(mat, "./models/haarcascade_frontalface_default.xml");
+                            foreach (var face in faces)
+                            {
+                                yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
+                            }
                         }
                     }
                 }
@@ -150,7 +161,37 @@ namespace LibVideoExtractFaces.Image
                                 facesList.Add(faceMat.ToBytes(".jpg"));
                             }
                         }
+                    }
+                }
+            }
 
+            return facesList;
+        }
+
+        
+        private IEnumerable<byte[]> DetectFaces(OpenCvSharp.Mat mat, string fileXml = "./models/haarcascade_frontalface_default.xml")
+        {
+            var facesList = new List<byte[]>();
+
+            // Carregar o classificador pré-treinado do OpenCV para detecção de faces
+            var faceCascade = new OpenCvSharp.CascadeClassifier(fileXml);
+
+            // Converter a imagem para escala de cinza
+            using (var grayMat = new OpenCvSharp.Mat())
+            {
+                Cv2.CvtColor(mat, grayMat, OpenCvSharp.ColorConversionCodes.BGR2GRAY);
+
+                // Detectar faces na imagem
+                var faces = faceCascade.DetectMultiScale(grayMat, 1.1, 3, HaarDetectionTypes.ScaleImage, new OpenCvSharp.Size(30, 30));
+
+                foreach (var face in faces)
+                {
+                    if (face.X >= 0 && face.Y >= 0 && face.X + face.Width <= mat.Cols && face.Y + face.Height <= mat.Rows)
+                    {
+                        using (var faceMat = new OpenCvSharp.Mat(mat, face))
+                        {
+                            facesList.Add(faceMat.ToBytes(".jpg"));
+                        }
                     }
                 }
             }
