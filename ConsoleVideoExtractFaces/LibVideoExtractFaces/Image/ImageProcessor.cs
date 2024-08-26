@@ -72,7 +72,26 @@ namespace LibVideoExtractFaces.Image
                         }
                         else
                         {
-                            faces = DetectFaces(mat, "./models/haarcascade_frontalface_default.xml");
+                            // Não funcionou muito bem com imagens de baixa resolução....
+                            /*faces = DetectFaces(mat, "./models/haarcascade_frontalface_default.xml");
+                            foreach (var face in faces)
+                            {
+                                yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
+                            }*/
+
+                            faces = DetectFaces(mat, "./models/haarcascade_frontalface_alt.xml");
+                            foreach (var face in faces)
+                            {
+                                yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
+                            }
+
+                            faces = DetectFaces(mat, "./models/haarcascade_fullbody.xml");
+                            foreach (var face in faces)
+                            {
+                                yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
+                            }
+
+                            faces = DetectFaces(mat, "./models/haarcascade_profileface.xml");
                             foreach (var face in faces)
                             {
                                 yield return new LibVideoExtractFaces.Model.Image(face, "Face detected");
